@@ -49,12 +49,22 @@ export async function registerUserController(req, res) {
 
         await user.save();
 
-        await sendEmailFunction({
+        const emailResult = await sendEmailFunction({
             to: email, 
             subject: "Verify email from Nhom18-Ecommerce", 
             text: "", 
             html: VerificationEmail(name, verifyCode)
         })
+
+        if (!emailResult) {
+            console.error('Failed to send verification email to:', email);
+            // Vẫn trả về success vì user đã được tạo, chỉ email thất bại
+            return res.status(200).json({
+                success: true,
+                error: false,
+                message: "User registered successfully, but failed to send verification email. Please check your email settings.",
+            })
+        }
 
         // const token = jwt.sign({
         //     email: email,
@@ -190,9 +200,9 @@ export async function loginUserController(request, response) {
         // Set cookie
         const cookiesOption = {
             httpOnly: true,
-            // secure: true,
-            // sameSite: "None"
-            secure: false, //Để tạm để chạy được trên localhost
+            secure: process.env.NODE_ENV === 'production', // true trong production
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 'None' cho cross-site
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         }
         response.cookie('accessToken', accesstoken, cookiesOption)
         response.cookie('refreshToken', refreshToken, cookiesOption)
@@ -273,7 +283,9 @@ export async function adminLoginUserController(request, response) {
 
         const cookiesOption = {
             httpOnly: true,
-            secure: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }
 
         response.cookie('accessToken', accesstoken, cookiesOption)
@@ -331,9 +343,9 @@ export async function authWithGoogle(request, response) {
             // Set cookie
             const cookiesOption = {
                 httpOnly: true,
-                secure: false, 
-                // secure: true,
-                // sameSite: "None"
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000
             }
             response.cookie('accessToken', accesstoken, cookiesOption)
             response.cookie('refreshToken', refreshToken, cookiesOption)
@@ -363,9 +375,9 @@ export async function authWithGoogle(request, response) {
             // Set cookie
             const cookiesOption = {
                 httpOnly: true,
-                secure: false, 
-                // secure: true,
-                // sameSite: "None"
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000
             }
             response.cookie('accessToken', accesstoken, cookiesOption)
             response.cookie('refreshToken', refreshToken, cookiesOption)
@@ -660,7 +672,8 @@ export async function logoutController(request, response) {
         // Xóa cookie
         const cookiesOption = {
             httpOnly: true,
-            secure: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
         }
 
         response.clearCookie('accessToken', cookiesOption);
@@ -901,8 +914,9 @@ export async function refreshToken(request, response) {
 
         const cookiesOption = {
             httpOnly: true,
-            secure: true,
-            sameSite: "None"
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }
 
         response.cookie('accessToken', newAccessToken, cookiesOption)
