@@ -33,7 +33,8 @@ app.use(cors({
     origin: [
         'http://localhost:5173', 
         'http://localhost:3000', 
-        'https://vocal-empanada-ed9da4.netlify.app'
+        'https://vocal-empanada-ed9da4.netlify.app', 
+        'https://bucolic-bubblegum-5f8587.netlify.app', 
         // TODO: Thêm URL của admin frontend khi deploy (nếu khác với client)
     ],
     credentials: true, // Cho phép gửi cookie
